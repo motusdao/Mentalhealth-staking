@@ -3,9 +3,10 @@ import { createWalletClient, custom, formatEther } from 'viem';
 import { celoAlfajores } from 'viem/chains';
 import { abi as StakingABI } from '../abi/HealthStakingFund.json';
 
-const STAKING_CONTRACT_ADDRESS = '0xYourContractAddressHere';
+const STAKING_CONTRACT_ADDRESS = '0x64608C2d5E4685830348e9155bAB423bf905E9c9'; // example
 
-export default function Stake4HealthApp() {
+
+export default function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
