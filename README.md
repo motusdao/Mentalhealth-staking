@@ -1,9 +1,8 @@
-
-# 🧠 Stake4Health
+# 🧠 MotusDAO Stake4Health
 
 > A MiniPay-compatible decentralized staking fund to subsidize mental health services using stablecoins on Celo.
 
-Stake4Health enables individuals and institutions to stake cUSD into a transparent, on-chain smart contract. The staking rewards are used to **fund therapy and mental health support** for underserved populations. Built with love for the [MiniPay Hackathon](https://celo.org/minipay).
+MotusDAO Stake4Health enables individuals and institutions to stake cUSD into a transparent, on-chain smart contract. The staking rewards are used to **fund therapy and mental health support** for underserved populations. Built with love for the [MiniPay Hackathon](https://celo.org/minipay).
 
 ---
 
@@ -30,6 +29,8 @@ Steps to test:
 - 🧠 Subsidies are distributed to certified mental health professionals
 - 📲 Optimized for lightweight mobile use via MiniPay + viem
 - 🔐 Institutional & community pool model
+- 🎨 Modern dark theme UI with cyan accents
+- 📱 Responsive design for both desktop and mobile
 
 ---
 
@@ -37,12 +38,13 @@ Steps to test:
 
 | Layer        | Tech                               |
 |--------------|------------------------------------|
-| Chain        | Celo Alfajores Testnet             |
-| Wallet       | MiniPay + SocialConnect            |
-| Contracts    | Solidity + Hardhat                 |
-| Frontend     | React + TypeScript + viem          |
-| Hosting      | ngrok (for MiniPay test access)    |
-| Treasury     | Gnosis Safe                        |
+| Chain        | Celo Alfajores Testnet            |
+| Wallet       | MiniPay + SocialConnect           |
+| Contracts    | Solidity + Hardhat                |
+| Frontend     | React + TypeScript + viem         |
+| Styling      | Tailwind CSS                      |
+| Hosting      | ngrok (for MiniPay test access)   |
+| Treasury     | Gnosis Safe                       |
 
 ---
 
@@ -58,6 +60,13 @@ Steps to test:
 
 ## 🛠️ Local Development
 
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Git
+- MiniPay wallet extension
+
 ### 1. Clone the project
 
 ```bash
@@ -72,13 +81,23 @@ cd frontend
 npm install
 ```
 
-### 3. Start the frontend
+### 3. Set up environment variables
+
+Create a `.env` file in the frontend directory:
+```env
+REACT_APP_CHAIN_ID=44787
+REACT_APP_NETWORK_NAME="Celo Alfajores"
+```
+
+### 4. Start the frontend
 
 ```bash
 npm run start
 ```
 
-### 4. Start ngrok tunnel
+The application will be available at `http://localhost:3000`
+
+### 5. Start ngrok tunnel (for MiniPay testing)
 
 ```bash
 npx ngrok http 3000
@@ -86,27 +105,24 @@ npx ngrok http 3000
 
 Paste the `https://your-ngrok-url` into MiniPay Developer Settings → Load Test Page.
 
----
+### Common Issues & Solutions
 
-## 🔐 .env Setup
+1. If you see "MiniPay wallet not detected":
+   - Make sure you have MiniPay wallet installed
+   - Ensure you're on the Celo Alfajores network
 
-At the project root, create a `.env` file:
-
-```
-PRIVATE_KEY=your_alfajores_wallet_private_key
-```
-
-> ⚠️ Never commit this file — it's used for contract deployment only.
+2. If transactions fail:
+   - Ensure you have test cUSD tokens in your wallet
+   - Get tokens from the [Celo Faucet](https://celo.org/faucet)
 
 ---
 
-## 📤 Deploy Contracts
+## 🔐 Contract Addresses (Alfajores Testnet)
 
-```bash
-npx hardhat run scripts/deploy.js --network alfajores
 ```
-
-Use the [Celo Faucet](https://celo.org/faucet) to fund your deployer wallet with testnet CELO + cUSD.
+STAKING_CONTRACT=0x64608C2d5E4685830348e9155bAB423bf905E9c9
+FEE_CURRENCY=0x765DE816845861e75A25fCA122bb6898B8B1282a
+```
 
 ---
 
@@ -115,14 +131,16 @@ Use the [Celo Faucet](https://celo.org/faucet) to fund your deployer wallet with
 ```
 stake4health/
 ├── contracts/              # Solidity smart contracts
-├── scripts/                # Deployment scripts
-├── frontend/               # React frontend
+├── scripts/               # Deployment scripts
+├── frontend/             # React frontend
 │   ├── src/
-│   │   ├── App.tsx         # MiniPay-enabled frontend
-│   ├── abi/                # HealthStakingFund ABI
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/        # Page components
+│   │   ├── context/      # React context providers
+│   │   ├── abi/          # Contract ABIs
 │   ├── public/
-├── hardhat.config.js       # Hardhat project config
-├── .env                    # Private key for deployer (not committed)
+├── hardhat.config.js      # Hardhat project config
+├── .env                   # Environment variables (not committed)
 ```
 
 ---
