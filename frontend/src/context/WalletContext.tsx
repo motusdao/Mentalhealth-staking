@@ -19,10 +19,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<ReturnType<typeof createWalletClient> | null>(null);
 
   useEffect(() => {
-    if (window.ethereum && window.ethereum.isMiniPay) {
+    if (window.ethereum) {
       setError('');
     } else {
-      setError('MiniPay wallet not detected. Please install MiniPay to use this application.');
+      setError('MetaMask not detected. Please install MetaMask to use this application.');
     }
   }, []);
 

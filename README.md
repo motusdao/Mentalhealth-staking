@@ -147,7 +147,7 @@ stake4health/
 
 ## 👨‍💻 Team
 
-- **Founder / Lead** – [@brahma101.eth](https://x.com/brahma101_eth)
+- **Founder / Lead** – [@brahma101.eth](https://github.com/brahma101_eth)
 - **Frontend/backend / Smart Contracts** – [@SergioFinix](https://github.com/SergioFinix)
 - **Mentors / Contributors** – Open to Collab 🤝
 
