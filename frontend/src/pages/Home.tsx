@@ -14,6 +14,9 @@ export default function Home() {
           A revolutionary platform combining health tracking with decentralized finance.
           Stake your assets and earn rewards while contributing to healthcare initiatives.
         </p>
+        <p className="text-lg text-cyan-300 max-w-2xl mx-auto leading-relaxed mb-8">
+          <strong>How Your Stake Helps:</strong> All yield generated from staked funds is used to pay for mental health services, making every staker a direct supporter of mental health access.
+        </p>
         <div className="flex justify-center">
           <WalletConnect />
         </div>
