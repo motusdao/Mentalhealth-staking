@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
-import { encodeFunctionData } from 'viem';
+import { encodeFunctionData, parseUnits } from 'viem';
 import { celoAlfajores } from 'viem/chains';
 import StakingABI from '../abi/HealthStakingFund.json';
 import WalletConnect from '../components/WalletConnect';
 import { useWallet } from '../context/WalletContext';
 
-const STAKING_CONTRACT_ADDRESS = '0x64608C2d5E4685830348e9155bAB423bf905E9c9' as const;
-const FEE_CURRENCY = '0x765DE816845861e75A25fCA122bb6898B8B1282a' as const;
+const STAKING_CONTRACT_ADDRESS = '0x4afea607fc9545c56449082fcbb4587ea0e4d45c' as const;
+const CUSD_TOKEN_ADDRESS = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1' as const;
+const FEE_CURRENCY = CUSD_TOKEN_ADDRESS;
+
+// ERC20 ABI for token approval
+const ERC20_ABI = [
+  {
+    constant: false,
+    inputs: [
+      { name: '_spender', type: 'address' },
+      { name: '_value', type: 'uint256' }
+    ],
+    name: 'approve',
+    outputs: [{ name: '', type: 'bool' }],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function'
+  }
+] as const;
 
 export default function Stake() {
   const { client, address, walletConnected } = useWallet();
@@ -14,6 +31,44 @@ export default function Stake() {
   const [txHash, setTxHash] = useState('');
   const [error, setError] = useState('');
   const [isStaking, setIsStaking] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+
+  async function approveCUSD() {
+    if (!client || !walletConnected || !address) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    try {
+      setIsApproving(true);
+      setError('');
+
+      const approveAmount = parseUnits(amount, 18);
+      const approveData = encodeFunctionData({
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [STAKING_CONTRACT_ADDRESS, approveAmount],
+      });
+
+      const approveHash = await client.sendTransaction({
+        chain: celoAlfajores,
+        to: CUSD_TOKEN_ADDRESS,
+        data: approveData,
+        account: address as `0x${string}`,
+        feeCurrency: FEE_CURRENCY,
+      });
+
+      // Wait for approval transaction to be mined
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds for transaction to be mined
+      return true;
+    } catch (error) {
+      console.error('Approval error:', error);
+      setError('Failed to approve cUSD spending. Please try again.');
+      return false;
+    } finally {
+      setIsApproving(false);
+    }
+  }
 
   async function stakeCUSD() {
     if (!client || !walletConnected || !address) {
@@ -21,16 +76,28 @@ export default function Stake() {
       return;
     }
 
+    if (!amount || parseFloat(amount) <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+
     try {
       setIsStaking(true);
       setError('');
 
-      const stakeAmount = BigInt(parseFloat(amount) * 1e18);
+      // First approve the token spending
+      const approved = await approveCUSD();
+      if (!approved) {
+        alert("approved");
+        return;
+      }
 
+      const stakeAmount = parseUnits(amount, 18);
+      const duration = 30 * 24 * 60 * 60; // 30 days in seconds
       const data = encodeFunctionData({
-        abi: StakingABI as any,
+        abi: StakingABI,
         functionName: 'stakeCUSD',
-        args: [stakeAmount, BigInt(0)],
+        args: [stakeAmount, duration], // duration instead of poolType
       });
 
       const hash = await client.sendTransaction({
@@ -39,12 +106,14 @@ export default function Stake() {
         data,
         account: address as `0x${string}`,
         feeCurrency: FEE_CURRENCY,
+        value: BigInt(0),
+        gas: BigInt(1000000)
       });
 
       setTxHash(hash);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Staking error:', error);
-      setError('Failed to stake. Please try again.');
+      setError(error.message || 'Failed to stake. Please try again.');
     } finally {
       setIsStaking(false);
     }
@@ -100,10 +169,10 @@ export default function Stake() {
 
           <button
             onClick={stakeCUSD}
-            disabled={!amount || isStaking || !walletConnected}
+            disabled={!amount || isStaking || isApproving || !walletConnected}
             className="w-full bg-cyan-600/80 text-white py-3 px-6 rounded-lg hover:bg-cyan-700/80 transition-colors disabled:bg-gray-800/60 disabled:cursor-not-allowed"
           >
-            {isStaking ? 'Staking...' : !walletConnected ? 'Connect Wallet to Stake' : 'Stake CUSD'}
+            {isApproving ? 'Approving...' : isStaking ? 'Staking...' : !walletConnected ? 'Connect Wallet to Stake' : 'Stake CUSD'}
           </button>
 
           {error && (

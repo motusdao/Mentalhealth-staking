@@ -1,4 +1,6 @@
-const hre = require("hardhat");
+import hre from "hardhat";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 async function main() {
   // Celo Alfajores addresses
@@ -15,10 +17,9 @@ async function main() {
     TREASURY_ADDRESS
   );
 
-  // Wait for deployment
-  await stakingFund.waitForDeployment();
+  await stakingFund.deployed();
 
-  console.log("HealthStakingFund deployed to:", await stakingFund.getAddress());
+  console.log("HealthStakingFund deployed to:", stakingFund.address);
 }
 
 main()
@@ -26,4 +27,4 @@ main()
   .catch((error) => {
     console.error(error);
     process.exit(1);
-  });
+  }); 

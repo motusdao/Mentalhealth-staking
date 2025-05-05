@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import WalletConnect from './WalletConnect';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export default function Layout({ children }: LayoutProps) {
                 MotusDAO
               </Link>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-4">
               <Link
                 to="/"
                 className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-cyan-900/30 hover:text-cyan-400 transition-all duration-300 ${isActive('/')}`}
@@ -48,6 +49,9 @@ export default function Layout({ children }: LayoutProps) {
               >
                 APY Info
               </Link>
+              <div className="ml-4">
+                <WalletConnect />
+              </div>
             </div>
           </div>
         </div>

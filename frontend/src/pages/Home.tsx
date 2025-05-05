@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import WalletConnect from '../components/WalletConnect';
 
 export default function Home() {
   return (
@@ -9,10 +10,13 @@ export default function Home() {
         <h1 className="text-5xl font-bold text-white mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
           Welcome to MotusDAO
         </h1>
-        <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-8">
           A revolutionary platform combining health tracking with decentralized finance.
           Stake your assets and earn rewards while contributing to healthcare initiatives.
         </p>
+        <div className="flex justify-center">
+          <WalletConnect />
+        </div>
       </div>
 
       {/* Action Boxes */}
@@ -92,7 +96,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-white">Health Focus</h3>
-            <p className="text-gray-300">Support healthcare initiatives while earning rewards</p>
+            <p className="text-gray-300">Support mental healthcare initiatives while earning rewards</p>
           </div>
           <div className="space-y-3">
             <div className="text-cyan-400">

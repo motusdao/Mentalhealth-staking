@@ -19,28 +19,109 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<ReturnType<typeof createWalletClient> | null>(null);
 
   useEffect(() => {
-    if (window.ethereum) {
-      setError('');
-    } else {
-      setError('MetaMask not detected. Please install MetaMask to use this application.');
+    // Check if MetaMask is installed
+    if (typeof window.ethereum === 'undefined') {
+      setError('MetaMask is not installed. Please install MetaMask to use this application.');
+      return;
     }
+
+    // Check if already connected
+    const checkConnection = async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          const newClient = createWalletClient({
+            chain: celoAlfajores,
+            transport: custom(window.ethereum),
+          });
+          setAddress(accounts[0]);
+          setWalletConnected(true);
+          setClient(newClient);
+        }
+      } catch (err) {
+        console.error('Error checking connection:', err);
+      }
+    };
+
+    checkConnection();
+
+    // Listen for account changes
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        setWalletConnected(false);
+        setAddress('');
+        setClient(null);
+      } else {
+        setAddress(accounts[0]);
+      }
+    };
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+    };
   }, []);
 
   async function connectWallet() {
     try {
       setError('');
+      
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      // Create wallet client
       const newClient = createWalletClient({
         chain: celoAlfajores,
         transport: custom(window.ethereum),
       });
-      
-      const [userAddress] = await newClient.getAddresses();
-      setAddress(userAddress);
+
+      // Switch to Celo Alfajores network if not already on it
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '44787' }], // 0xaef3 is the chain ID for Celo Alfajores
+        });
+      } catch (switchError: any) {
+        // This error code indicates that the chain has not been added to MetaMask
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: '44787',
+                  chainName: 'Celo Alfajores',
+                  nativeCurrency: {
+                    name: 'CELO',
+                    symbol: 'CELO',
+                    decimals: 18,
+                  },
+                  rpcUrls: ['https://alfajores-forno.celo-testnet.org'],
+                  blockExplorerUrls: ['https://alfajores.celoscan.io'],
+                },
+              ],
+            });
+          } catch (addError) {
+            throw new Error('Failed to add Celo Alfajores network to MetaMask');
+          }
+        } else {
+          throw new Error('Failed to switch to Celo Alfajores network');
+        }
+      }
+
+      setAddress(accounts[0]);
       setWalletConnected(true);
       setClient(newClient);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Connection error:', error);
-      setError('Failed to connect wallet. Please try again.');
+      setError(error.message || 'Failed to connect wallet. Please try again.');
     }
   }
 

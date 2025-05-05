@@ -17,7 +17,7 @@ contract HealthStakingFund {
 
     struct StakeInfo {
         uint256 amount;
-        PoolType poolType;
+        uint256 duration;
     }
 
     mapping(address => StakeInfo) public stakes;
@@ -40,16 +40,16 @@ contract HealthStakingFund {
 
     function stakeCELO(uint256 amount, PoolType poolType) external {
         require(celoToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
-        stakes[msg.sender] = StakeInfo(amount, poolType);
+        stakes[msg.sender] = StakeInfo(amount, 0);
         totalStaked += amount;
         emit Staked(msg.sender, amount, poolType);
     }
 
-    function stakeCUSD(uint256 amount, PoolType poolType) external {
+    function stakeCUSD(uint256 amount, uint256 duration) external {
         require(cUSDToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
-        stakes[msg.sender] = StakeInfo(amount, poolType);
+        stakes[msg.sender] = StakeInfo(amount, duration);
         totalStaked += amount;
-        emit Staked(msg.sender, amount, poolType);
+        emit Staked(msg.sender, amount, PoolType.Community);
     }
 
     function sendMockYield(uint256 yieldAmount) external onlyOwner {
@@ -58,9 +58,9 @@ contract HealthStakingFund {
         emit YieldSent(yieldAmount, treasury);
     }
 
-    function getUserStake(address user) external view returns (uint256 amount, PoolType poolType) {
+    function getUserStake(address user) external view returns (uint256 amount, uint256 duration) {
         StakeInfo memory info = stakes[user];
-        return (info.amount, info.poolType);
+        return (info.amount, info.duration);
     }
 
     function getTotalStaked() external view returns (uint256) {

@@ -120,7 +120,7 @@ Paste the `https://your-ngrok-url` into MiniPay Developer Settings → Load Test
 ## 🔐 Contract Addresses (Alfajores Testnet)
 
 ```
-STAKING_CONTRACT=0x64608C2d5E4685830348e9155bAB423bf905E9c9
+STAKING_CONTRACT=0x349974CF184BFE2Ff0CAAF1F87380313CF5C44cD
 FEE_CURRENCY=0x765DE816845861e75A25fCA122bb6898B8B1282a
 ```
 

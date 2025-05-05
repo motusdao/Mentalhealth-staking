@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { createWalletClient, custom, encodeFunctionData } from 'viem';
-import { celoAlfajores } from 'viem/chains';
+import { ContractKit } from '@celo/contractkit';
+import { newKit } from '@celo/contractkit';
+import Web3 from 'web3';
 import StakingABI from '../abi/HealthStakingFund.json';
 
-const STAKING_CONTRACT_ADDRESS = '0x64608C2d5E4685830348e9155bAB423bf905E9c9' as const;
-const FEE_CURRENCY = '0x765DE816845861e75A25fCA122bb6898B8B1282a' as const;
+// Original contract addresses
+const STAKING_CONTRACT_ADDRESS = '0x4afea607fc9545c56449082fcbb4587ea0e4d45c';
+const CUSD_TOKEN_ADDRESS = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
 interface StakeProps {
   address: string;
@@ -22,27 +24,55 @@ const Stake: React.FC<StakeProps> = ({ address }) => {
       setError('');
       setTxHash('');
 
-      const client = createWalletClient({
-        chain: celoAlfajores,
-        transport: custom(window.ethereum),
-      });
+      // Initialize ContractKit
+      const web3 = new Web3((window as any).ethereum);
+      const kit = newKit(web3.currentProvider as any);
 
-      const stakeAmount = BigInt(parseFloat(amount) * 1e18);
+      // Get the staking contract
+      const stakingContract = new kit.web3.eth.Contract(
+        StakingABI as any,
+        STAKING_CONTRACT_ADDRESS
+      );
 
-      const data = encodeFunctionData({
-        abi: StakingABI as any,
-        functionName: 'stakeCUSD',
-        args: [stakeAmount, BigInt(0)],
-      });
+      // Get the cUSD contract
+      const cUSDContract = new kit.web3.eth.Contract(
+        [
+          {
+            constant: false,
+            inputs: [
+              { name: '_spender', type: 'address' },
+              { name: '_value', type: 'uint256' }
+            ],
+            name: 'approve',
+            outputs: [{ name: '', type: 'bool' }],
+            type: 'function'
+          }
+        ],
+        CUSD_TOKEN_ADDRESS
+      );
 
-      const hash = await client.sendTransaction({
-        to: STAKING_CONTRACT_ADDRESS,
-        data,
-        account: address as `0x${string}`,
-        feeCurrency: FEE_CURRENCY,
-      });
+      const stakeAmount = kit.web3.utils.toWei(amount, 'ether');
 
-      setTxHash(hash);
+      // Get the current gas price
+      const gasPrice = await kit.web3.eth.getGasPrice();
+
+      // Approve the staking contract to spend cUSD
+      const approveTx = await cUSDContract.methods
+        .approve(STAKING_CONTRACT_ADDRESS, stakeAmount)
+        .send({ 
+          from: address,
+          gasPrice: gasPrice
+        });
+
+      // Stake the cUSD
+      const stakeTx = await stakingContract.methods
+        .stakeCUSD(stakeAmount, 0) // 0 for Community pool
+        .send({ 
+          from: address,
+          gasPrice: gasPrice
+        });
+
+      setTxHash(stakeTx.transactionHash);
     } catch (err) {
       console.error('Staking error:', err);
       setError(err instanceof Error ? err.message : 'Failed to stake tokens');
